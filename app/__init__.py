@@ -2,7 +2,7 @@ import os
 from flask import Flask, jsonify, render_template, send_from_directory
 from .config import Config
 from flask_cors import CORS
-from .extensions import db, jwt, mail # Removed 'cors' from extensions as we initialize it here
+from .extensions import db, jwt, mail
 from .routes.auth_routes import auth_bp
 from .routes.test_routes import test_bp
 from app.routes.student_routes import student_bp
@@ -20,8 +20,10 @@ from app.routes.announcement_routes import announcement_bp
 
 def create_app():
     # --- UI PATH CONFIGURATION ---
-    # Find the 'frontend' folder relative to this file
-    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+    # Using a more direct path calculation for Render's Linux environment
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    project_root = os.path.dirname(base_dir)
+    frontend_dir = os.path.join(project_root, 'frontend')
 
     app = Flask(__name__, 
                 template_folder=frontend_dir, 
@@ -36,20 +38,17 @@ def create_app():
     mail.init_app(app)
 
     # --- SAFE DATABASE MIGRATIONS ---
-    # We wrap this in a broader try block to prevent the app from crashing on Render 
-    # if the database connection isn't ready immediately.
     with app.app_context():
         try:
             with db.engine.connect() as conn:
-                # Use text() for raw SQL and commit explicitly
+                # IF NOT EXISTS is used to prevent errors if columns already exist
                 conn.execute(db.text("ALTER TABLE user ADD COLUMN IF NOT EXISTS is_active TINYINT(1) NOT NULL DEFAULT 1"))
                 conn.execute(db.text("ALTER TABLE user ADD COLUMN IF NOT EXISTS activation_token VARCHAR(100) NULL"))
                 conn.commit()
         except Exception as e:
-            # We log the error but don't stop the app from starting
-            print(f"Migration skipped or failed: {e}")
+            print(f"Migration notice: {e}")
     
-    # Update CORS for production (Allowing all for now to ensure UI connectivity)
+    # CORS setup for production
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
     # Register Blueprints
@@ -76,17 +75,20 @@ def create_app():
     # --- UI & STATIC FILE ROUTES ---
     @app.route("/")
     def home():
-        return render_template("index.html")
+        # Changed from index.html to login.html because index.html does not exist
+        return render_template("login.html")
 
     @app.route('/login')
     def serve_login():
         return render_template('login.html')
 
-    # Catch-all to serve other HTML files directly if they exist in /frontend
+    # Catch-all to serve other files (dashboard.html, style.css, etc.)
     @app.route('/<path:path>')
     def serve_static(path):
+        # If the user requests an HTML file, use render_template
         if path.endswith(".html"):
             return render_template(path)
+        # Otherwise, serve it as a static file (CSS, JS, Images)
         return send_from_directory(frontend_dir, path)
 
     return app
