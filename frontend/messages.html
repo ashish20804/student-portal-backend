@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/messages.css">
+</head>
+<body class="bg-light">
+
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+        <header class="bg-white border-bottom px-4 py-2 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a href="#" id="backBtn" class="text-dark me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+                <div class="bg-warning text-white rounded p-2 me-2"><i class="bi bi-chat-left-text-fill"></i></div>
+                <h5 class="fw-bold mb-0">Messages</h5>
+            </div>
+            
+            <div class="d-flex align-items-center">
+                <div class="text-end me-3">
+                    <div class="small fw-bold" id="userNameDisplay">Loading...</div>
+                    <div class="extra-small text-muted" id="userRollDisplay" style="font-size: 0.7rem;">---</div>
+                </div>
+                
+                <div id="loggedInUserAvatar" class="me-3 shadow-sm d-flex align-items-center justify-content-center fw-bold text-white overflow-hidden" 
+                     style="width: 40px; height: 40px; border-radius: 50%; font-size: 0.9rem; flex-shrink: 0; background-color: #eee;">
+                </div>
+
+                <i class="bi bi-box-arrow-right fs-4 cursor-pointer text-danger" title="Logout" onclick="logout()"></i>
+            </div>
+        </header>
+
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            <aside class="bg-white border-end d-flex flex-column" style="width: 320px;">
+                <div class="p-3">
+                    <div class="input-group bg-light rounded-pill border px-2">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="userSearchInput" class="form-control bg-transparent border-0 shadow-none" placeholder="Search messages">
+                    </div>
+                </div>
+                <div class="overflow-y-auto flex-grow-1" id="chatList">
+                    <div class="text-center p-4"><div class="spinner-border spinner-border-sm text-warning"></div></div>
+                </div>
+            </aside>
+
+            <main class="flex-grow-1 d-flex flex-column bg-white">
+                <div id="chatHeader" class="p-3 border-bottom d-flex align-items-center d-none">
+                    <div class="avatar me-3 shadow-sm" id="activeAvatar" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;"></div>
+                    <div>
+                        <h6 class="fw-bold mb-0" id="activeChatName">Select a User</h6>
+                        <small class="text-success" style="font-size: 0.7rem;"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Active Now</small>
+                    </div>
+                </div>
+
+                <div class="flex-grow-1 p-4 overflow-y-auto bg-chat" id="messageDisplay">
+                    <div class="text-center text-muted mt-5">
+                        <i class="bi bi-chat-dots fs-1 d-block mb-3 opacity-25"></i>
+                        Select a conversation to start messaging
+                    </div>
+                </div>
+
+                <div class="p-3 border-top bg-white">
+                    <form id="sendForm" class="input-group">
+                        <button class="btn btn-light border-0 rounded-circle me-2" type="button"><i class="bi bi-plus-lg"></i></button>
+                        <input type="text" id="msgInput" class="form-control rounded-pill px-4 bg-light border-0" placeholder="Type a message..." required disabled>
+                        <button class="btn btn-warning text-white rounded-circle ms-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;" type="submit" id="sendBtn" disabled>
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/messages.js"></script>
+</body>
+</html>

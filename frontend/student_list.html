@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management | Faculty Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .active-tab { background: white !important; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #dee2e6 !important; }
+        .tab-btn { color: #6c757d; border: 1px solid transparent; transition: 0.3s; }
+        .info-card { background: #fff; border: 1px solid #f0f0f0; border-radius: 12px; padding: 20px; height: 100%; }
+        .status-pill { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .profile-initial { width: 64px; height: 64px; background: #0d6efd; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1.5rem; }
+        .d-none { display: none !important; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-white bg-white border-bottom px-4 sticky-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button onclick="handleBackNavigation()" class="btn btn-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="bi bi-arrow-left text-white"></i>
+                </button>
+                <span class="navbar-brand fw-bold mb-0" id="headerTitle">Student List</span>
+            </div>
+        </div>
+    </nav>
+
+    <div id="listView" class="container py-4">
+        <div class="card border-0 shadow-sm p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-funnel me-2"></i>Filters</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted">Search Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search students...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted">Semester</label>
+                    <select id="semesterFilter" class="form-select">
+                        <option value="">All Semesters</option>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                        <option value="7">Semester 7</option>
+                        <option value="8">Semester 8</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small fw-bold text-muted">Department</label>
+                    <select id="deptFilter" class="form-select">
+                        <option value="">All Departments</option>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="Mechanical">Mechanical</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button onclick="fetchStudents()" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Roll Number</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Semester</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="profileView" class="container py-4 d-none">
+        <div class="card border-0 shadow-sm p-4 mb-4">
+            <div class="d-flex align-items-center mb-4">
+                <div class="profile-initial me-3" id="profInit">A</div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h4 class="fw-bold mb-0" id="profName">---</h4>
+                            <p class="text-muted mb-0" id="profRoll">---</p>
+                        </div>
+                        <span class="status-pill" id="profSem">Semester -</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-3 border-top pt-3">
+                <div class="col-md-3"><small class="text-muted d-block">Email</small><span id="profEmail" class="fw-medium small">---</span></div>
+                <div class="col-md-3"><small class="text-muted d-block">Department</small><span id="profDept" class="fw-medium small">---</span></div>
+                <div class="col-md-3"><small class="text-muted d-block">Phone No</small><span id="profPhone" class="fw-medium small">---</span></div>
+                <div class="col-md-3"><small class="text-muted d-block">Address</small><span id="profAddress" class="fw-medium small">---</span></div>
+            </div>
+        </div>
+
+        <div id="permissionTabsNav" class="bg-secondary-subtle p-1 rounded-pill mb-4 d-flex justify-content-start overflow-auto d-none">
+            <button onclick="showTab('placement')" class="btn rounded-pill px-4 tab-btn d-none" id="tab-placement">Placement</button>
+            <button onclick="showTab('higher')" class="btn rounded-pill px-4 tab-btn d-none" id="tab-higher">Higher studies</button>
+            <button onclick="showTab('curricular')" class="btn rounded-pill px-4 tab-btn d-none" id="tab-curricular">Curricular</button>
+            <button onclick="showTab('extra')" class="btn rounded-pill px-4 tab-btn d-none" id="tab-extra">Extracurricular</button>
+        </div>
+
+        <div id="tabContent"></div>
+    </div>
+
+    <script src="js/student_list.js"></script>
+</body>
+</html>

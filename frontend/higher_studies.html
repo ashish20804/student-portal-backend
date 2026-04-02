@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher Studies Information</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-white bg-white border-bottom px-4">
+        <div class="d-flex align-items-center">
+            <a href="dashboard.html" class="text-dark me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+            <div class="bg-primary text-white rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <h5 class="fw-bold mb-0">Higher studies information</h5>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 800px;">
+        
+        <div class="card border-0 shadow-sm p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold">Higher Studies planning</h5>
+                <button id="addAppBtn" class="btn btn-primary btn-sm d-none" onclick="toggleForm()">+ Add Application</button>
+            </div>
+            <div class="bg-light p-3 rounded-3 text-center">
+                <p class="small fw-bold mb-2">Are you planning for higher studies?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button id="planYes" onclick="setPlanningStatus(true)" class="btn btn-outline-primary w-50 py-1">Yes</button>
+                    <button id="planNo" onclick="setPlanningStatus(false)" class="btn btn-outline-secondary w-50 py-1">No</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="formSection" class="card border-0 shadow-sm p-4 mb-4 d-none">
+            <h5 class="fw-bold mb-3">Add New Application</h5>
+            <form id="higherStudiesForm">
+                <div class="mb-3">
+                    <label class="small text-muted">University Name*</label>
+                    <input type="text" id="university" class="form-control border-primary" required>
+                </div>
+                <div class="mb-3">
+                    <label class="small text-muted">Course Name*</label>
+                    <input type="text" id="courseName" class="form-control" required>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="small text-muted">Country</label>
+                        <input type="text" id="country" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">Admission Status</label>
+                        <input type="text" id="admissionStatus" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-muted">App. Date</label>
+                        <input type="date" id="applicationDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-50 py-2">Save Application</button>
+                    <button type="button" class="btn btn-white border w-50 py-2" onclick="toggleForm()">Cancel</button>
+                </div>
+                <div class="mb-4">
+    <label class="small text-muted fw-bold d-block mb-2">Upload Admission/Application Proof (PDF only)*</label>
+    <div class="input-group">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-file-earmark-pdf text-danger"></i></span>
+        <input type="file" id="proof_file" class="form-control border-start-0" accept=".pdf">
+    </div>
+    <div class="form-text text-danger fw-bold" style="font-size: 0.75rem;">
+        <i class="bi bi-exclamation-triangle-fill"></i> Maximum file size allowed: 20MB
+    </div>
+</div>
+            </form>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4">
+            <h5 class="fw-bold mb-3">Higher Studies Applications</h5>
+            <div id="applicationsContainer"></div>
+        </div>
+    </div>
+
+    <script src="js/higher_studies.js"></script>
+</body>
+</html>

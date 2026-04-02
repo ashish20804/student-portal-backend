@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher Studies | Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar bg-white border-bottom px-4 sticky-top">
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center gap-3">
+                <a href="faculty_dashboard.html" class="btn btn-sm btn-light border text-muted">
+                    <i class="bi bi-arrow-left me-1"></i>Back
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-primary rounded-circle p-2">
+                        <i class="bi bi-mortarboard-fill text-white" style="font-size:0.85rem;"></i>
+                    </div>
+                    <span class="fw-bold">Student Portal</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="mb-4">
+            <h4 class="fw-bold mb-0">Higher Studies Records</h4>
+            <p class="text-muted small mb-0">View students pursuing postgraduate education</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-2 px-3">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or roll no…">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="filterUniversity" class="form-control form-control-sm" placeholder="Filter by university…">
+                    </div>
+                    <div class="col-md-3">
+                        <select id="filterStatus" class="form-select form-select-sm">
+                            <option value="">All Statuses</option>
+                            <option>Selected</option>
+                            <option>Applied</option>
+                            <option>Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                            <i class="bi bi-x-circle me-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-2 px-3">
+                <span class="small text-muted">Showing <span id="recordCount">0</span> records</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Roll No</th>
+                            <th>University</th>
+                            <th>Course</th>
+                            <th>Country</th>
+                            <th>Status</th>
+                            <th>Document</th>
+                        </tr>
+                    </thead>
+                    <tbody id="higherStudiesTable">
+                        <tr><td colspan="7" class="text-center py-4 text-muted">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/higher_studies_list.js"></script>
+</body>
+</html>

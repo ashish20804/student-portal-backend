@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management | Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .x-small { font-size: 0.75rem; }
+        .bg-success-subtle { background-color: #d1e7dd !important; }
+        .bg-danger-subtle { background-color: #f8d7da !important; }
+        .bg-primary-subtle { background-color: #cfe2ff !important; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-white bg-white border-bottom px-4">
+        <div class="d-flex align-items-center">
+            <a href="admin_dashboard.html" class="text-dark me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+            <h5 class="fw-bold mb-0">User Management</h5>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="card border-0 shadow-sm p-4 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="userSearch" class="form-control border-start-0" placeholder="Name or email..." oninput="fetchUsers()">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold text-muted">Role</label>
+                    <select id="roleFilter" class="form-select" onchange="fetchUsers()">
+                        <option value="">All Roles</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="small fw-bold text-muted">Department</label>
+                    <select id="deptFilter" class="form-select" onchange="fetchUsers()">
+                        <option value="">All Departments</option>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="Mechanical">Mechanical</option>
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-primary px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-person-plus-fill me-2"></i>Add New User
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">UserID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold" id="addUserModalLabel">Create New Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="resetAddUserModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="addUserStep1">
+                        <div class="mb-3">
+                            <label class="small fw-bold text-muted mb-1">FULL NAME</label>
+                            <input type="text" id="addName" class="form-control" placeholder="John Doe">
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-bold text-muted mb-1">EMAIL ADDRESS</label>
+                            <input type="email" id="addEmail" class="form-control" placeholder="example@nirmauni.ac.in">
+                        </div>
+                        <div class="alert alert-info py-2 small border-0 mb-3">
+                            <i class="bi bi-envelope-check me-2"></i>An activation link will be sent to the faculty's email to set their own password.
+                        </div>
+                        <div class="row g-2 mb-4">
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-muted mb-1">ROLE</label>
+                                <select id="addRole" class="form-select" onchange="updateAddButtonText()">
+                                    <option value="faculty">Faculty</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <small class="text-muted">Note: Students register themselves</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold text-muted mb-1">DEPARTMENT</label>
+                                <select id="addDept" class="form-select">
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100 py-2 fw-bold" id="btnNextAction" onclick="handleUserCreationFlow()">
+                            Create Faculty Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="accessModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold">Manage Access: <span id="modalUserName" class="text-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="fw-bold small mb-2 text-muted">CHANGE CORE ROLE</label>
+                        <select id="editRole" class="form-select">
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    
+                    <label class="fw-bold small mb-2 text-muted">SPECIFIC DATA ACCESS (RBAC)</label>
+                    <div class="list-group shadow-sm">
+                        <label class="list-group-item d-flex gap-2 border-start-0 border-end-0">
+                            <input class="form-check-input flex-shrink-0" type="checkbox" value="view_activities" name="perm">
+                            <div>
+                                <div class="fw-bold small">Manage Student Activities</div>
+                                <div class="text-muted x-small">Access to extracurricular and event data</div>
+                            </div>
+                        </label>
+                        <label class="list-group-item d-flex gap-2 border-start-0 border-end-0">
+                            <input class="form-check-input flex-shrink-0" type="checkbox" value="view_placement" name="perm">
+                            <div>
+                                <div class="fw-bold small">View Placement Records</div>
+                                <div class="text-muted x-small">Access to company and salary information</div>
+                            </div>
+                        </label>
+                        <label class="list-group-item d-flex gap-2 border-start-0 border-end-0">
+                            <input class="form-check-input flex-shrink-0" type="checkbox" value="view_higher_studies" name="perm">
+                            <div>
+                                <div class="fw-bold small">Higher Studies Data</div>
+                                <div class="text-muted x-small">Access to university admission records</div>
+                            </div>
+                        </label>
+                        <label class="list-group-item d-flex gap-2 border-start-0 border-end-0 bg-light-subtle">
+                            <input class="form-check-input flex-shrink-0" type="checkbox" value="post_announcement" name="perm">
+                            <div>
+                                <div class="fw-bold small">Post Announcements</div>
+                                <div class="text-muted x-small">Allow user to broadcast notifications</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveAccessChanges()">Save Access Level</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="academicModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold">Update Academic Details: <span id="academicStudentName" class="text-primary"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 small border-0 mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Update student's academic performance data
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-1">ROLL NUMBER</label>
+                        <input type="text" id="editRollNo" class="form-control" placeholder="e.g. 22BCE024">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-1">PROGRAM</label>
+                            <input type="text" id="editProgram" class="form-control" placeholder="e.g. B.Tech">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-1">SEMESTER</label>
+                            <input type="number" id="editSemester" class="form-control" min="1" max="8" placeholder="1-8">
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1">LAST SGPA</label>
+                            <input type="number" id="editSgpa" class="form-control" step="0.01" min="0" max="10" placeholder="0.00">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1">CURR. CGPA</label>
+                            <input type="number" id="editCgpa" class="form-control" step="0.01" min="0" max="10" placeholder="0.00">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1">ATTENDANCE %</label>
+                            <input type="number" id="editAttendance" class="form-control" min="0" max="100" placeholder="0-100">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-1">DEPARTMENT</label>
+                        <select id="editDepartment" class="form-select">
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="Mechanical">Mechanical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-primary w-100 py-2 fw-bold" onclick="saveAcademicDetails()">Save Academic Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/user_management.js"></script>
+</body>
+</html>
