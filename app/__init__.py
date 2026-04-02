@@ -29,7 +29,7 @@ def create_app():
     # Auto-migrate new columns if they don't exist
     with app.app_context():
         from app.models.announcement import Announcement
-        db.create_all()  # creates announcement table if not exists
+        #db.create_all()  # creates announcement table if not exists
         try:
             with db.engine.connect() as conn:
                 conn.execute(db.text("ALTER TABLE user ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1"))
