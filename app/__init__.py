@@ -1,7 +1,8 @@
-from flask import Flask, jsonify
+import os
+from flask import Flask, jsonify, render_template
 from .config import Config
 from flask_cors import CORS
-from .extensions import db, jwt, cors, mail # Added mail import
+from .extensions import db, jwt, cors, mail
 from .routes.auth_routes import auth_bp
 from .routes.test_routes import test_bp
 from app.routes.student_routes import student_bp
@@ -18,7 +19,15 @@ from app.routes.testimonial_routes import testimonial_bp
 from app.routes.announcement_routes import announcement_bp
 
 def create_app():
-    app = Flask(__name__)
+    # --- UI PATH CONFIGURATION ---
+    # Point to the 'frontend' folder sitting outside the 'app' folder
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+
+    app = Flask(__name__, 
+                template_folder=frontend_dir, 
+                static_folder=frontend_dir, 
+                static_url_path='') 
+
     app.config.from_object(Config)
 
     # Initialize extensions
@@ -26,27 +35,26 @@ def create_app():
     jwt.init_app(app)
     mail.init_app(app)
 
-    # Auto-migrate new columns if they don't exist
+    # Auto-migrate (Kept your logic but wrapped in app_context)
     with app.app_context():
-        from app.models.announcement import Announcement
-        #db.create_all()  # creates announcement table if not exists
         try:
             with db.engine.connect() as conn:
                 conn.execute(db.text("ALTER TABLE user ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1"))
                 conn.commit()
         except Exception:
-            pass  # Column already exists
+            pass 
         try:
             with db.engine.connect() as conn:
                 conn.execute(db.text("ALTER TABLE user ADD COLUMN activation_token VARCHAR(100) NULL"))
                 conn.commit()
         except Exception:
-            pass  # Column already exists
+            pass 
     
+    # Update CORS for production (Allow your Render URL)
     CORS(
         app,
         supports_credentials=True,
-        resources={r"/*": {"origins": ["http://127.0.0.1:8000", "http://localhost:8000"]}}
+        resources={r"/*": {"origins": ["*"]}} # Change this to your specific Render URL later for security
     )
 
     # Register Blueprints
@@ -65,18 +73,18 @@ def create_app():
     app.register_blueprint(testimonial_bp)
     app.register_blueprint(announcement_bp)
 
-    # --- ADDED: Custom Error Handler for Large Files ---
     @app.errorhandler(413)
     def request_entity_too_large(error):
-        return jsonify({
-            "error": "The file is too large! Maximum allowed size is 20MB."
-        }), 413
+        return jsonify({"error": "The file is too large! Max 20MB."}), 413
 
+    # --- UI ROUTES ---
     @app.route("/")
     def home():
-        return jsonify({"message": "Student Portal Backend is running!"})
+        # This will now look for index.html inside the frontend folder
+        return render_template("index.html")
+
     @app.route('/login')
     def serve_login():
-        return app.send_static_file('login.html')
+        return render_template('login.html')
 
     return app
