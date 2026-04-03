@@ -1,5 +1,4 @@
-const BASE_URL          = `${CONFIG.API_BASE_URL}/student`;
-const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
+const BASE_URL = `${CONFIG.API_BASE_URL}/student`;
 
 window.onload = loadProfile;
 
@@ -20,9 +19,9 @@ async function loadProfile() {
 
         const previewImg = document.getElementById("profilePreview");
         if (data.profile_image) {
-            previewImg.src = `${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${Date.now()}`;
+            previewImg.src = data.profile_image;
         } else {
-            previewImg.src = `https://ui-avatars.com/api/?name=${data.name}&background=random&size=128`;
+            previewImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'User')}&background=random&size=128`;
         }
 
         document.getElementById("rollNumber").value  = data.rollNumber  || "N/A";

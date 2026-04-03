@@ -1,6 +1,5 @@
-const BASE_URL         = `${CONFIG.API_BASE_URL}/faculty`;
-const ROOT_URL         = CONFIG.API_BASE_URL;
-const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
+const BASE_URL = `${CONFIG.API_BASE_URL}/faculty`;
+const ROOT_URL = CONFIG.API_BASE_URL;
 
 window.onload = async function () { await loadFacultyDashboard(); };
 
@@ -17,7 +16,7 @@ async function loadFacultyDashboard() {
 
         const avatar = document.getElementById("facultyAvatar");
         if (data.profile_image) {
-            avatar.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            avatar.innerHTML = `<img src="${data.profile_image}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
         } else {
             avatar.innerText = name.charAt(0).toUpperCase();
         }

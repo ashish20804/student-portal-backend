@@ -1,5 +1,4 @@
-const BASE_URL          = `${CONFIG.API_BASE_URL}/student`;
-const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
+const BASE_URL = `${CONFIG.API_BASE_URL}/student`;
 
 window.onload = loadFacultyProfile;
 
@@ -21,7 +20,7 @@ async function loadFacultyProfile() {
 
         const preview = document.getElementById('profilePreview');
         if (data.profile_image) {
-            preview.src = `${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${Date.now()}`;
+            preview.src = data.profile_image;
         } else {
             preview.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Faculty')}&background=random&size=128`;
         }

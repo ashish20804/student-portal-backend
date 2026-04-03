@@ -1,6 +1,5 @@
-const BASE_URL         = CONFIG.API_BASE_URL;
-const ROOT_URL         = CONFIG.API_BASE_URL;
-const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
+const BASE_URL = CONFIG.API_BASE_URL;
+const ROOT_URL = CONFIG.API_BASE_URL;
 
 window.onload = async () => { await loadDashboard(); };
 
@@ -25,7 +24,7 @@ async function loadDashboard() {
 
         const initialCircle = document.getElementById("userInitialCircle");
         if (data.profile_image) {
-            initialCircle.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;">`;
+            initialCircle.innerHTML = `<img src="${data.profile_image}" style="width:100%;height:100%;object-fit:cover;">`;
             initialCircle.classList.remove('bg-primary');
         } else if (data.name) {
             initialCircle.innerHTML = data.name.trim().charAt(0).toUpperCase();

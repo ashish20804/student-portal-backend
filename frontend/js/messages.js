@@ -1,6 +1,5 @@
-const MSG_URL           = `${CONFIG.API_BASE_URL}/message`;
-const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
-const PROFILE_URL       = `${CONFIG.API_BASE_URL}/student/profile`; 
+const MSG_URL     = `${CONFIG.API_BASE_URL}/message`;
+const PROFILE_URL = `${CONFIG.API_BASE_URL}/student/profile`; 
 
 let activeChatId = null;
 let pollInterval = null;
@@ -33,7 +32,7 @@ async function autoOpenFromURL() {
         if (!document.querySelector(`.chat-item[data-uid="${uid}"]`)) {
             const container = document.getElementById('chatList');
             const avatarContent = profileImage
-                ? `<img src="${IMAGE_DISPLAY_URL}/${profileImage}" class="w-100 h-100 object-fit-cover">`
+                ? `<img src="${profileImage}" class="w-100 h-100 object-fit-cover">`
                 : decodedName.charAt(0).toUpperCase();
             const bgColor = profileImage ? 'transparent' : stringToColor(decodedName);
             const div = document.createElement('div');
@@ -76,7 +75,7 @@ async function loadLoggedInUser() {
 
             const avatarDiv = document.getElementById("loggedInUserAvatar");
             if (data.profile_image) {
-                avatarDiv.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${data.profile_image}" class="w-100 h-100 object-fit-cover">`;
+                avatarDiv.innerHTML = `<img src="${data.profile_image}" class="w-100 h-100 object-fit-cover">`;
                 avatarDiv.style.backgroundColor = "transparent";
             } else {
                 avatarDiv.innerText = data.name.charAt(0).toUpperCase();
@@ -143,7 +142,7 @@ function renderChatList(users) {
 
     container.innerHTML = users.map(user => {
         const avatarContent = user.profile_image 
-            ? `<img src="${IMAGE_DISPLAY_URL}/${user.profile_image}" class="w-100 h-100 object-fit-cover">`
+            ? `<img src="${user.profile_image}" class="w-100 h-100 object-fit-cover">`
             : user.username.charAt(0).toUpperCase();
         const bgColor = user.profile_image ? 'transparent' : stringToColor(user.username);
 
@@ -180,7 +179,7 @@ async function openConversation(userId, username, profileImage) {
     const headerAvatar = document.getElementById("activeAvatar");
     headerAvatar.classList.add("overflow-hidden");
     if (profileImage && profileImage !== 'null' && profileImage !== '') {
-        headerAvatar.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${profileImage}" class="w-100 h-100 object-fit-cover">`;
+        headerAvatar.innerHTML = `<img src="${profileImage}" class="w-100 h-100 object-fit-cover">`;
         headerAvatar.style.backgroundColor = "transparent";
     } else {
         headerAvatar.innerText = username.charAt(0).toUpperCase();
