@@ -55,13 +55,13 @@ document.getElementById("higherStudiesForm").addEventListener("submit", async (e
     e.preventDefault();
 
     const fileInput = document.getElementById("proof_file");
-    const maxSizeInBytes =  1024 * 1024; // 20MB
+    const maxSizeInBytes = 16 * 1024 * 1024; // 16MB
 
     // 1. Validate if file exists and check size before uploading
     if (fileInput.files.length > 0) {
         const selectedFile = fileInput.files[0];
         if (selectedFile.size > maxSizeInBytes) {
-            alert(`❌ File Too Large: "${selectedFile.name}" is over 20MB. Please compress the PDF or choose a smaller file.`);
+            alert(`❌ File Too Large: "${selectedFile.name}" is over 16MB. Please compress the PDF or choose a smaller file.`);
             fileInput.value = ""; // Clear the input for the user
             return; // Stop the submission
         }

@@ -1,5 +1,5 @@
 const API_URL = `${CONFIG.API_BASE_URL}/placement`;
-const MAX_SIZE_BYTES = 1024 * 1024; // 1MB for testing (Change to 20 * 1024 * 1024 later)
+const MAX_SIZE_BYTES = 16 * 1024 * 1024; // 16MB
 
 window.onload = loadPlacementData;
 
@@ -45,7 +45,7 @@ document.getElementById("placementForm").addEventListener("submit", async (e) =>
     if (fileInput.files.length > 0) {
         const selectedFile = fileInput.files[0];
         if (selectedFile.size > MAX_SIZE_BYTES) {
-            alert(`❌ File Too Large: "${selectedFile.name}" is over 20MB. Please compress the PDF or choose a smaller file.`);
+            alert(`❌ File Too Large: "${selectedFile.name}" is over 16MB. Please compress the PDF or choose a smaller file.`);
             fileInput.value = ""; // Clear the input for the user
             return; // Stop the submission
         }

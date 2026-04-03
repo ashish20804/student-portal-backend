@@ -1,7 +1,7 @@
 const ACT_URL = `${CONFIG.API_BASE_URL}/activity`;
 const COM_URL = `${CONFIG.API_BASE_URL}/committee`;
 
-const MAX_SIZE_BYTES = 1024 * 1024; 
+const MAX_SIZE_BYTES = 16 * 1024 * 1024; // 16MB
 
 window.onload = () => {
     loadActivities();
@@ -55,7 +55,7 @@ document.getElementById("activityForm").addEventListener("submit", async (e) => 
     if (fileInput && fileInput.files.length > 0) {
         const selectedFile = fileInput.files[0];
         if (selectedFile.size > MAX_SIZE_BYTES) {
-            alert(`❌ File Too Large: "${selectedFile.name}" is over the 1MB limit. Please upload a smaller certificate.`);
+            alert(`❌ File Too Large: "${selectedFile.name}" is over 16MB. Please upload a smaller certificate.`);
             fileInput.value = ""; // Clear the input
             return; // Stop submission
         }
