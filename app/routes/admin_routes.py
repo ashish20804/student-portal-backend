@@ -16,11 +16,13 @@ admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
 
 # --- EMAIL UTILITY (Internal) ---
 def send_activation_email(email, name, token):
-    activation_link = f"http://127.0.0.1:8000/activate.html?token={token}"
+    from flask import current_app
+    frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+    activation_link = f"{frontend_url}/activate.html?token={token}"
     msg = MailMessage("Activate Your Student Portal Account", recipients=[email])
     msg.body = (
         f"Hello {name},\n\n"
-        f"Your faculty account has been created on the Student Portal.\n\n"
+        f"Your account has been created on the Student Portal.\n\n"
         f"Click the link below to activate your account and set your password:\n"
         f"{activation_link}\n\n"
         f"This link expires in 24 hours.\n\n"

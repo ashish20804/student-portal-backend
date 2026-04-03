@@ -109,8 +109,16 @@ def register():
 
         # 3. SEND WELCOME EMAIL
         try:
-            msg = Message("Welcome to Nirma Student Portal", recipients=[email])
-            msg.body = f"Hello {name},\n\nYour registration is successful!\n\nCredentials:\nEmail: {email}\nPassword: {password}\n\nPlease login to complete your profile."
+            from flask import current_app
+            frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+            msg = Message("Welcome to Student Portal", recipients=[email])
+            msg.body = (
+                f"Hello {name},\n\n"
+                f"Your registration is successful!\n\n"
+                f"Login here: {frontend_url}/login.html\n\n"
+                f"Email: {email}\n\n"
+                f"If you did not register, please ignore this email."
+            )
             mail.send(msg)
         except Exception as mail_err:
             print(f"Mail failed to send but user was created: {mail_err}")
@@ -149,6 +157,7 @@ def activate_account():
 # =========================
 @auth_bp.route("/forgot-password", methods=["POST"])
 def forgot_password():
+    from flask import current_app
     data = request.get_json()
     email = data.get("email")
 
@@ -156,19 +165,23 @@ def forgot_password():
     if not user:
         return jsonify({"error": "User with this email does not exist"}), 404
 
-    # Generate 6-digit OTP
     otp = str(random.randint(100000, 999999))
     user.otp_code = otp
-    user.otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10) # 10 min expiry
+    user.otp_expiry = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
     try:
         db.session.commit()
-
-        # Send OTP via Email
+        frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
         msg = Message("Your Password Reset OTP", recipients=[email])
-        msg.body = f"Hello {user.name},\n\nYour OTP for password reset is: {otp}.\n\nThis code expires in 10 minutes."
+        msg.body = (
+            f"Hello {user.name},\n\n"
+            f"Your OTP for password reset is: {otp}\n\n"
+            f"This code expires in 10 minutes.\n\n"
+            f"Use this link to reset your password:\n"
+            f"{frontend_url}/forgot_password.html\n\n"
+            f"If you did not request this, please ignore this email."
+        )
         mail.send(msg)
-
         return jsonify({"message": "OTP sent to your email"}), 200
     except Exception as e:
         db.session.rollback()
