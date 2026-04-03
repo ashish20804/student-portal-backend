@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:5000/faculty";
+const BASE_URL = `${CONFIG.API_BASE_URL}/faculty`;
 let selectedStudent = null;
 let userPermissions = [];
 

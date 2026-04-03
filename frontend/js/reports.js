@@ -159,11 +159,11 @@ async function fetchReportData() {
                               type === 'higher-studies' ? 'higher-studies-stats' : 'activity-stats';
 
         const [listRes, trendRes, statsRes] = await Promise.all([
-            fetch(`http://127.0.0.1:5000/admin/reports/${type}?${params.toString()}`,
+            fetch(`${CONFIG.API_BASE_URL}/admin/reports/${type}?${params.toString()}`,
                 { method: 'GET', credentials: 'include', headers }),
-            fetch(`http://127.0.0.1:5000/admin/reports/${type}/year-wise`,
+            fetch(`${CONFIG.API_BASE_URL}/admin/reports/${type}/year-wise`,
                 { method: 'GET', credentials: 'include', headers }),
-            fetch(`http://127.0.0.1:5000/admin/reports/${statsEndpoint}`,
+            fetch(`${CONFIG.API_BASE_URL}/admin/reports/${statsEndpoint}`,
                 { method: 'GET', credentials: 'include', headers })
         ]);
 

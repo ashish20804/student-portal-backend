@@ -1,6 +1,6 @@
-const MSG_URL = "http://127.0.0.1:5000/message";
-const IMAGE_DISPLAY_URL = "http://127.0.0.1:5000/student/display-photo";
-const PROFILE_URL = "http://127.0.0.1:5000/student/profile"; 
+const MSG_URL           = `${CONFIG.API_BASE_URL}/message`;
+const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
+const PROFILE_URL       = `${CONFIG.API_BASE_URL}/student/profile`; 
 
 let activeChatId = null;
 let pollInterval = null;
@@ -244,7 +244,7 @@ function stringToColor(str) {
 // --- 5. Logout ---
 async function logout() {
     if (confirm("Are you sure you want to logout?")) {
-        await fetch('http://127.0.0.1:5000/logout', { method: 'POST', credentials: 'include' });
+        await fetch(`${CONFIG.API_BASE_URL}/logout`, { method: 'POST', credentials: 'include' });
         window.location.href = "login.html";
     }
 }

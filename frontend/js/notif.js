@@ -30,7 +30,7 @@ function markNotifRead(senderId, ts) {
 
 async function pollNotifications() {
     try {
-        const res = await fetch(`${ROOT_URL}/message/unread-count`, { credentials: 'include' });
+        const res = await fetch(`${CONFIG.API_BASE_URL}/message/unread-count`, { credentials: 'include' });
         if (!res.ok) return;
         const data = await res.json();
 

@@ -1,5 +1,5 @@
-const ACT_URL = "http://127.0.0.1:5000/activity";
-const COM_URL = "http://127.0.0.1:5000/committee";
+const ACT_URL = `${CONFIG.API_BASE_URL}/activity`;
+const COM_URL = `${CONFIG.API_BASE_URL}/committee`;
 
 const MAX_SIZE_BYTES = 1024 * 1024; 
 

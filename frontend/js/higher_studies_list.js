@@ -1,4 +1,4 @@
-const ROOT_URL = "http://127.0.0.1:5000";
+const ROOT_URL = CONFIG.API_BASE_URL;
 let allRecords = [];
 
 window.onload = loadHigherStudiesData;

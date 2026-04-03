@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:5000/higherstudies";
+const API_URL = `${CONFIG.API_BASE_URL}/higherstudies`;
 
 window.onload = loadPageData;
 

@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:5000/placement";
+const API_URL = `${CONFIG.API_BASE_URL}/placement`;
 const MAX_SIZE_BYTES = 1024 * 1024; // 1MB for testing (Change to 20 * 1024 * 1024 later)
 
 window.onload = loadPlacementData;

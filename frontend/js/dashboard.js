@@ -1,22 +1,13 @@
-const BASE_URL = "http://127.0.0.1:5000";
-const ROOT_URL = "http://127.0.0.1:5000";
-const IMAGE_DISPLAY_URL = `${BASE_URL}/student/display-photo`;
+const BASE_URL         = CONFIG.API_BASE_URL;
+const ROOT_URL         = CONFIG.API_BASE_URL;
+const IMAGE_DISPLAY_URL = `${CONFIG.API_BASE_URL}/student/display-photo`;
 
-window.onload = async () => {
-    await loadDashboard();
-};
+window.onload = async () => { await loadDashboard(); };
 
 async function loadDashboard() {
     try {
-        const res = await fetch(`${BASE_URL}/student/dashboard`, {
-            method: "GET",
-            credentials: "include"
-        });
-
-        if (res.status === 401 || res.status === 403) {
-            window.location.href = "login.html";
-            return;
-        }
+        const res = await fetch(`${BASE_URL}/student/dashboard`, { method: "GET", credentials: "include" });
+        if (res.status === 401 || res.status === 403) { window.location.href = "login.html"; return; }
 
         const data = await res.json();
 
@@ -34,29 +25,21 @@ async function loadDashboard() {
 
         const initialCircle = document.getElementById("userInitialCircle");
         if (data.profile_image) {
-            const ts = new Date().getTime();
-            initialCircle.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${ts}" style="width:100%;height:100%;object-fit:cover;">`;
+            initialCircle.innerHTML = `<img src="${IMAGE_DISPLAY_URL}/${data.profile_image}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;">`;
             initialCircle.classList.remove('bg-primary');
-        } else if (data.name && data.name.trim()) {
+        } else if (data.name) {
             initialCircle.innerHTML = data.name.trim().charAt(0).toUpperCase();
             initialCircle.classList.add('bg-primary');
         }
 
-        // Start notification polling with real userId
         if (data.userId) initNotifications(data.userId);
         await loadAnnouncements();
 
-    } catch (err) {
-        console.error("Fetch error:", err);
-    }
+    } catch (err) { console.error("Fetch error:", err); }
 }
 
 async function logout() {
     if (!confirm("Are you sure you want to logout?")) return;
-    try {
-        await fetch(`${BASE_URL}/logout`, { method: "POST", credentials: "include" });
-        window.location.href = "login.html";
-    } catch (err) {
-        window.location.href = "login.html";
-    }
+    try { await fetch(`${BASE_URL}/logout`, { method: "POST", credentials: "include" }); } catch {}
+    window.location.href = "login.html";
 }

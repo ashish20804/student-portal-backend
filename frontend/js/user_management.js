@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:5000/admin";
+const BASE_URL = `${CONFIG.API_BASE_URL}/admin`;
 let selectedUserId = null;
 
 console.log("✅ user_management.js loaded successfully");

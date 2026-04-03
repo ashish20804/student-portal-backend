@@ -1,4 +1,4 @@
-const ANNOUNCE_URL = 'http://127.0.0.1:5000/announcements';
+const ANNOUNCE_URL = `${CONFIG.API_BASE_URL}/announcements`;
 
 const ROLE_COLORS = {
     admin:   { bg: '#dc3545', label: 'Admin' },

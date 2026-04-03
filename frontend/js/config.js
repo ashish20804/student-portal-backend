@@ -1,3 +1,5 @@
 const CONFIG = {
-    API_BASE_URL: "https://student-portal-backend-8icb.onrender.com"
+    API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://127.0.0.1:5000'
+        : 'https://student-portal-backend-8icb.onrender.com'
 };
