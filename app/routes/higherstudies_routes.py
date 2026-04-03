@@ -9,8 +9,10 @@ from datetime import datetime
 
 higherstudies_bp = Blueprint("higherstudies", __name__, url_prefix="/higherstudies")
 
-# Configure where to save
-UPLOAD_FOLDER = os.path.join('uploads', 'higher_studies')
+# Configure where to save — absolute path works on both local and Render
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads', 'higher_studies')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'pdf'}
 
 def allowed_file(filename):

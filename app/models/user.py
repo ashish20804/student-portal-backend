@@ -11,7 +11,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default="student")
     phoneNumber = db.Column(db.String(20))
     address = db.Column(db.String(255))
-    profile_image = db.Column(db.String(255), nullable=True)
+    profile_image = db.Column(db.Text, nullable=True)  # stores base64 data URL or filename
 
     # For Password Reset (OTP)
     otp_code = db.Column(db.String(6), nullable=True)

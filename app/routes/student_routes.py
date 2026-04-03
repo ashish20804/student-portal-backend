@@ -10,8 +10,10 @@ from app.extensions import db
 # Cleaner structure
 student_bp = Blueprint("student_bp", __name__, url_prefix="/student")
 
-# Define your external path here so it's easy to change later
-EXTERNAL_UPLOAD_PATH = r'E:\student_portal_backend\profiles\profiles'
+# Portable profile photo path — works on both Windows (local) and Linux (Render)
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+PROFILE_UPLOAD_PATH = os.path.join(BASE_DIR, 'uploads', 'profiles')
+os.makedirs(PROFILE_UPLOAD_PATH, exist_ok=True)
 
 def extract_roll_number(email):
     """Helper to extract '22BCE024' from '22bce024@nirmauni.ac.in'"""
@@ -20,10 +22,10 @@ def extract_roll_number(email):
     return email.split('@')[0].upper()
 
 # ---------------- PHOTO DISPLAY ROUTE ----------------
-@student_bp.route('/display-photo/<filename>', methods=["GET"])
+@student_bp.route('/display-photo/<path:filename>', methods=["GET"])
 def display_photo(filename):
-    """Bridge route to serve images from the E: drive"""
-    return send_from_directory(EXTERNAL_UPLOAD_PATH, filename)
+    """Legacy route — kept for backward compatibility with old filename-based photos"""
+    return send_from_directory(PROFILE_UPLOAD_PATH, filename)
 
 # ---------------- STUDENT/FACULTY DASHBOARD ----------------
 @student_bp.route("/dashboard", methods=["GET"])
@@ -131,18 +133,15 @@ def update_profile():
         return jsonify({"error": "Profile not found"}), 404
 
     try:
-        # 1. Handle Profile Image Upload
+        # 1. Handle Profile Image Upload — store as base64 in DB (works on Render + local)
         if 'profile_image' in request.files:
             file = request.files['profile_image']
             if file and file.filename != '':
-                ext = file.filename.rsplit('.', 1)[1].lower()
-                filename = secure_filename(f"user_{user_id}.{ext}")
-                
-                if not os.path.exists(EXTERNAL_UPLOAD_PATH):
-                    os.makedirs(EXTERNAL_UPLOAD_PATH)
-                
-                file.save(os.path.join(EXTERNAL_UPLOAD_PATH, filename))
-                user.profile_image = filename
+                import base64
+                ext = file.filename.rsplit('.', 1)[-1].lower()
+                mime = 'image/jpeg' if ext in ('jpg', 'jpeg') else f'image/{ext}'
+                encoded = base64.b64encode(file.read()).decode('utf-8')
+                user.profile_image = f"data:{mime};base64,{encoded}"
 
         # 2. Update User Table Fields
         user.name = request.form.get("name", user.name)
