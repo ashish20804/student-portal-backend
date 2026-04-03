@@ -42,6 +42,38 @@ def auth_check():
         }), 401
 
 # =========================
+# SECURE ADMIN SETUP (one-time use, protected by secret key)
+# =========================
+@auth_bp.route("/setup-admin", methods=["POST"])
+def setup_admin():
+    import os
+    data = request.get_json() or {}
+
+    # Must provide the setup secret defined in environment variable
+    setup_secret = os.getenv("ADMIN_SETUP_SECRET", "")
+    if not setup_secret or data.get("secret") != setup_secret:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    email    = data.get("email",    "admin@studentportal.com")
+    password = data.get("password", "Admin@1234")
+    name     = data.get("name",     "System Administrator")
+
+    existing = User.query.filter_by(email=email).first()
+    if existing:
+        existing.role             = "admin"
+        existing.is_active        = True
+        existing.activation_token = None
+        existing.set_password(password)
+        db.session.commit()
+        return jsonify({"message": f"Admin updated. Email: {email}"}), 200
+
+    admin = User(name=name, email=email, role="admin", is_active=True)
+    admin.set_password(password)
+    db.session.add(admin)
+    db.session.commit()
+    return jsonify({"message": f"Admin created. Email: {email}"}), 201
+
+# =========================
 # USER REGISTRATION
 # =========================
 @auth_bp.route("/register", methods=["POST"])

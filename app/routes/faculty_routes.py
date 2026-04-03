@@ -45,7 +45,7 @@ def faculty_dashboard():
     return jsonify({
         "userId": user_info.userId,
         "faculty_name": user_info.name,
-        "profile_image": user_info.profile_image,
+        "profile_image": user_info.profile_image if user_info.profile_image and user_info.profile_image.startswith('data:') else None,
         "placed_students": placed_count,
         "higher_studies_count": higher_studies_count,
         "extracurricular_count": extracurricular_count,

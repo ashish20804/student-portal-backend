@@ -21,6 +21,15 @@ def extract_roll_number(email):
         return None
     return email.split('@')[0].upper()
 
+def normalize_profile_image(profile_image):
+    """Returns None for old filename-based images (they no longer exist on server).
+    Returns the value as-is if it's already a base64 data URL."""
+    if not profile_image:
+        return None
+    if profile_image.startswith('data:'):
+        return profile_image  # already base64 data URL
+    return None  # old filename — file doesn't exist on Render, return None so avatar initial shows
+
 # ---------------- PHOTO DISPLAY ROUTE ----------------
 @student_bp.route('/display-photo/<path:filename>', methods=["GET"])
 def display_photo(filename):
@@ -47,7 +56,7 @@ def student_dashboard():
     response_data = {
         "name": user.name,
         "email": user.email,
-        "profile_image": user.profile_image
+        "profile_image": normalize_profile_image(user.profile_image)
     }
 
     if role == "student":
@@ -93,7 +102,7 @@ def get_profile():
         "email": user.email,
         "phoneNumber": user.phoneNumber,
         "address": user.address,
-        "profile_image": user.profile_image,
+        "profile_image": normalize_profile_image(user.profile_image),
         "role": role
     }
 
