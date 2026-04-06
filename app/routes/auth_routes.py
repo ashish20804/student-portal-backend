@@ -1,4 +1,5 @@
 import random
+import threading
 import datetime
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
@@ -8,10 +9,10 @@ from flask_jwt_extended import (
     get_jwt,
     verify_jwt_in_request
 )
-from flask_mail import Message
 from app.models.user import User
 from app.models.student import Student
-from app.extensions import db, mail  # Ensure mail is imported from extensions
+from app.extensions import db, mail
+from app.email_utils import send_email_async
 
 auth_bp = Blueprint("auth_bp", __name__)
 
@@ -107,28 +108,19 @@ def register():
         db.session.add(new_student)
         db.session.commit()
 
-        # 3. SEND WELCOME EMAIL in background thread
+        # 3. SEND WELCOME EMAIL
         try:
             from flask import current_app
-            import threading
-            app = current_app._get_current_object()
-            frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
-            _email, _name = email, name
-            def _send_welcome():
-                with app.app_context():
-                    try:
-                        msg = Message("Welcome to Student Portal", recipients=[_email])
-                        msg.body = (
-                            f"Hello {_name},\n\n"
-                            f"Your registration is successful!\n\n"
-                            f"Login here: {frontend_url}/login.html\n\n"
-                            f"Email: {_email}\n\n"
-                            f"If you did not register, please ignore this email."
-                        )
-                        mail.send(msg)
-                    except Exception as e:
-                        print(f"Welcome email failed: {e}")
-            threading.Thread(target=_send_welcome, daemon=True).start()
+            frontend_url = current_app.config.get('FRONTEND_URL', 'https://student-portal-backend-8icb.onrender.com')
+            subject = "Welcome to Student Portal"
+            body = (
+                f"Hello {name},\n\n"
+                f"Your registration is successful!\n\n"
+                f"Login here: {frontend_url}/login.html\n\n"
+                f"Email: {email}\n\n"
+                f"If you did not register, please ignore this email."
+            )
+            send_email_async(email, name, subject, body)
         except Exception as mail_err:
             print(f"Mail setup failed: {mail_err}")
 
@@ -181,29 +173,17 @@ def forgot_password():
     try:
         db.session.commit()
         from flask import current_app
-        import threading
-        app = current_app._get_current_object()
-        frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
-        otp_copy = otp
-        user_name = user.name
-
-        def _send_otp():
-            with app.app_context():
-                try:
-                    msg = Message("Your Password Reset OTP", recipients=[email])
-                    msg.body = (
-                        f"Hello {user_name},\n\n"
-                        f"Your OTP for password reset is: {otp_copy}\n\n"
-                        f"This code expires in 10 minutes.\n\n"
-                        f"Use this link to reset your password:\n"
-                        f"{frontend_url}/forgot_password.html\n\n"
-                        f"If you did not request this, please ignore this email."
-                    )
-                    mail.send(msg)
-                except Exception as e:
-                    print(f"OTP email failed: {e}")
-
-        threading.Thread(target=_send_otp, daemon=True).start()
+        frontend_url = current_app.config.get('FRONTEND_URL', 'https://student-portal-backend-8icb.onrender.com')
+        subject = "Your Password Reset OTP"
+        body = (
+            f"Hello {user.name},\n\n"
+            f"Your OTP for password reset is: {otp}\n\n"
+            f"This code expires in 10 minutes.\n\n"
+            f"Use this link to reset your password:\n"
+            f"{frontend_url}/forgot_password.html\n\n"
+            f"If you did not request this, please ignore this email."
+        )
+        send_email_async(user.email, user.name, subject, body)
         return jsonify({"message": "OTP sent to your email"}), 200
     except Exception as e:
         db.session.rollback()

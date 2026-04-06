@@ -1,10 +1,8 @@
 import os
 import secrets
-import threading
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_mail import Message as MailMessage
-from app.extensions import db, mail
+from app.extensions import db
 from app.models.user import User
 from app.models.student import Student
 from app.models.faculty import Faculty
@@ -12,34 +10,24 @@ from app.models.activity import Activity
 from app.models.committee import Committee
 from app.models.placement import Placement
 from app.utils.role_required import admin_required
+from app.email_utils import send_email_async
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
 
-# --- EMAIL UTILITY — runs in background thread so it never blocks the worker ---
 def send_activation_email(email, name, token):
     from flask import current_app
-    app = current_app._get_current_object()
-    frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+    frontend_url = current_app.config.get('FRONTEND_URL', 'https://student-portal-backend-8icb.onrender.com')
     activation_link = f"{frontend_url}/activate.html?token={token}"
-
-    def _send():
-        with app.app_context():
-            try:
-                msg = MailMessage("Activate Your Student Portal Account", recipients=[email])
-                msg.body = (
-                    f"Hello {name},\n\n"
-                    f"Your account has been created on the Student Portal.\n\n"
-                    f"Click the link below to activate your account and set your password:\n"
-                    f"{activation_link}\n\n"
-                    f"This link expires in 24 hours.\n\n"
-                    f"If you did not expect this email, please ignore it."
-                )
-                mail.send(msg)
-                print(f"Activation email sent to {email}")
-            except Exception as e:
-                print(f"Activation email failed for {email}: {e}")
-
-    threading.Thread(target=_send, daemon=True).start()
+    subject = "Activate Your Student Portal Account"
+    body = (
+        f"Hello {name},\n\n"
+        f"Your account has been created on the Student Portal.\n\n"
+        f"Click the link below to activate your account and set your password:\n"
+        f"{activation_link}\n\n"
+        f"This link expires in 24 hours.\n\n"
+        f"If you did not expect this email, please ignore it."
+    )
+    send_email_async(email, name, subject, body)
 
 # ==========================================
 # 1. DASHBOARD & SYSTEM ANALYTICS (UNTOUCHED)
