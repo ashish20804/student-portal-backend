@@ -1,4 +1,4 @@
 workers = 1
-timeout = 60
+timeout = 120
 keepalive = 5
 loglevel = "info"
