@@ -41,17 +41,22 @@ def create_app():
     with app.app_context():
         try:
             with db.engine.connect() as conn:
-                # Try standard syntax first (MySQL 8+)
                 try:
                     conn.execute(db.text("ALTER TABLE user ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1"))
                     conn.commit()
                 except Exception:
-                    pass  # Column already exists
+                    pass
                 try:
                     conn.execute(db.text("ALTER TABLE user ADD COLUMN activation_token VARCHAR(100) NULL"))
                     conn.commit()
                 except Exception:
-                    pass  # Column already exists
+                    pass
+                # Widen profile_image to MEDIUMBLOB to store image bytes
+                try:
+                    conn.execute(db.text("ALTER TABLE user MODIFY COLUMN profile_image MEDIUMBLOB NULL"))
+                    conn.commit()
+                except Exception:
+                    pass
         except Exception as e:
             print(f"DB connection notice: {e}")
     
