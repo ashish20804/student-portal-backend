@@ -1,32 +1,38 @@
 """
-email_utils.py — Shared email sending utility.
+email_utils.py — Synchronous email sending.
 
-Uses Python smtplib with SSL on port 465 (works on most hosts including Render).
-Falls back to Flask-Mail if smtplib fails.
-No external API accounts needed.
+Sends email BEFORE returning the HTTP response so Render worker restarts
+cannot kill the email mid-send.
+
+Uses port 465 SSL (works on Render) with fallback to port 587 TLS.
 """
 
 import os
 import smtplib
-import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from flask import current_app
 
 
-def _send_via_smtplib(to_email: str, to_name: str, subject: str, body: str,
-                       smtp_user: str, smtp_pass: str):
+def send_email_async(to_email: str, to_name: str, subject: str, body: str):
     """
-    Send via Python smtplib — tries port 465 (SSL) first, then 587 (TLS).
-    Both use the same Gmail credentials.
+    Send email synchronously using smtplib.
+    Named 'async' for API compatibility but runs inline.
+    Port 465 SSL tried first (works on Render), then 587 TLS fallback.
     """
+    smtp_user = os.getenv("MAIL_USER", "")
+    smtp_pass = os.getenv("MAIL_PASS", "")
+
+    if not smtp_user or not smtp_pass:
+        print(f"[Email] Skipped — MAIL_USER or MAIL_PASS not set")
+        return
+
     msg = MIMEMultipart()
     msg['From']    = f"Student Portal Admin <{smtp_user}>"
     msg['To']      = to_email
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
 
-    # Try port 465 SSL first (often allowed on Render)
+    # Try port 465 SSL first
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=20) as server:
             server.login(smtp_user, smtp_pass)
@@ -37,37 +43,13 @@ def _send_via_smtplib(to_email: str, to_name: str, subject: str, body: str,
         print(f"[SMTP SSL 465] Failed: {e465} — trying TLS 587...")
 
     # Fallback: port 587 TLS
-    with smtplib.SMTP('smtp.gmail.com', 587, timeout=20) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.sendmail(smtp_user, to_email, msg.as_string())
-    print(f"[SMTP TLS 587] Email sent to {to_email}")
-
-
-def send_email_async(to_email: str, to_name: str, subject: str, body: str):
-    """
-    Send an email in a background thread so it never blocks the HTTP response.
-    Uses Gmail credentials from environment variables.
-    """
-    app         = current_app._get_current_object()
-    smtp_user   = os.getenv("MAIL_USER", "")
-    smtp_pass   = os.getenv("MAIL_PASS", "")
-
-    def _run():
-        try:
-            if smtp_user and smtp_pass:
-                _send_via_smtplib(to_email, to_name, subject, body, smtp_user, smtp_pass)
-            else:
-                # Flask-Mail fallback (local dev without env vars)
-                from flask_mail import Message
-                from app.extensions import mail
-                with app.app_context():
-                    msg = Message(subject, recipients=[to_email])
-                    msg.body = body
-                    mail.send(msg)
-                print(f"[Flask-Mail] Email sent to {to_email}")
-        except Exception as e:
-            print(f"[Email] Failed for {to_email}: {e}")
-
-    threading.Thread(target=_run, daemon=True).start()
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587, timeout=20) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.sendmail(smtp_user, to_email, msg.as_string())
+        print(f"[SMTP TLS 587] Email sent to {to_email}")
+    except Exception as e587:
+        print(f"[SMTP TLS 587] Failed: {e587}")
+        print(f"[Email] All methods failed for {to_email}")
