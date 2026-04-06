@@ -53,8 +53,9 @@ class Config:
     # Default is the Render URL. For local dev it reads from .env file.
     FRONTEND_URL = os.getenv("FRONTEND_URL", "https://student-portal-backend-8icb.onrender.com")
     MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
+    MAIL_PORT = 465
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = True
     MAIL_USERNAME = os.getenv("MAIL_USER")
-    MAIL_PASSWORD = os.getenv("MAIL_PASS") 
+    MAIL_PASSWORD = os.getenv("MAIL_PASS")
     MAIL_DEFAULT_SENDER = ('Student Portal Admin', os.getenv("MAIL_USER"))

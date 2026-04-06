@@ -1,15 +1,5 @@
 """
-email_utils.py — Simple Flask-Mail based email sending.
-
-Uses the original working approach (Flask-Mail with Gmail SMTP).
-The only change from the original code is FRONTEND_URL is now dynamic
-so activation links work on both local and Render.
-
-Required environment variables:
-    MAIL_USER    = 22bce024@nirmauni.ac.in
-    MAIL_PASS    = haoh ffxs beay fmav
-    FRONTEND_URL = http://127.0.0.1:8000          (local .env)
-    FRONTEND_URL = https://student-portal-backend-8icb.onrender.com  (Render dashboard)
+email_utils.py — Flask-Mail based email sending via Gmail SSL port 465.
 """
 
 import threading
@@ -19,17 +9,19 @@ from app.extensions import mail
 
 
 def send_email_async(to_email: str, to_name: str, subject: str, body: str):
-    """Send email in a background thread using Flask-Mail (original working method)."""
+    """Send email in a background thread using Flask-Mail."""
     app = current_app._get_current_object()
 
     def _run():
         with app.app_context():
             try:
+                print(f"[Email] Attempting to send to {to_email}...")
                 msg = Message(subject, recipients=[to_email])
                 msg.body = body
                 mail.send(msg)
-                print(f"[Email] Sent to {to_email}")
+                print(f"[Email] Successfully sent to {to_email}")
             except Exception as e:
-                print(f"[Email] Failed for {to_email}: {e}")
+                print(f"[Email] FAILED for {to_email}: {type(e).__name__}: {e}")
 
     threading.Thread(target=_run, daemon=True).start()
+    print(f"[Email] Background thread started for {to_email}")
