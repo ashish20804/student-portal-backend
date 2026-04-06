@@ -1,16 +1,17 @@
 """
 email_utils.py
 
-On Render  : uses Brevo HTTP API (HTTPS port 443 — always works on Render)
-Locally    : uses Gmail SMTP via smtplib (as before)
+On Render  : uses Resend HTTP API (HTTPS port 443 — always works on Render)
+Locally    : uses Gmail SMTP via smtplib
 
 Render Environment Variables needed:
-    BREVO_API_KEY  = your_brevo_api_key
-    BREVO_FROM     = your_verified_sender@email.com  (verified in Brevo dashboard)
-    FRONTEND_URL   = https://student-portal-backend-8icb.onrender.com
+    RESEND_API_KEY  = re_your_key_here
+    RESEND_FROM     = onboarding@resend.dev   (or your verified sender)
+    FRONTEND_URL    = https://student-portal-backend-8icb.onrender.com
 """
 
 import os
+import io
 import smtplib
 import threading
 import requests
@@ -18,28 +19,27 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 
-def _send_via_brevo(to_email: str, to_name: str, subject: str, body: str):
-    """Send via Brevo HTTP API — works on Render (HTTPS port 443)."""
-    api_key      = os.getenv("BREVO_API_KEY", "")
-    sender_email = os.getenv("BREVO_FROM", os.getenv("MAIL_USER", ""))
-    sender_name  = "Student Portal Admin"
+def _send_via_resend(to_email: str, to_name: str, subject: str, body: str):
+    """Send via Resend HTTP API — works on Render (HTTPS port 443)."""
+    api_key      = os.getenv("RESEND_API_KEY", "")
+    sender_email = os.getenv("RESEND_FROM", "onboarding@resend.dev")
 
     resp = requests.post(
-        "https://api.brevo.com/v3/smtp/email",
+        "https://api.resend.com/emails",
         headers={
-            "api-key":      api_key,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type":  "application/json"
         },
         json={
-            "sender":      {"name": sender_name, "email": sender_email},
-            "to":          [{"email": to_email, "name": to_name}],
-            "subject":     subject,
-            "textContent": body
+            "from":    f"Student Portal <{sender_email}>",
+            "to":      [to_email],
+            "subject": subject,
+            "text":    body
         },
         timeout=15
     )
     resp.raise_for_status()
-    print(f"[Brevo] Email sent to {to_email}")
+    print(f"[Resend] Email sent to {to_email}")
 
 
 def _send_via_smtp(to_email: str, subject: str, body: str):
@@ -73,17 +73,17 @@ def _send_via_smtp(to_email: str, subject: str, body: str):
 def send_email_async(to_email: str, to_name: str, subject: str, body: str):
     """
     Send email in a background thread.
-    Uses Brevo API if BREVO_API_KEY is set (Render), else Gmail SMTP (local).
+    Uses Resend API if RESEND_API_KEY is set (Render), else Gmail SMTP (local).
     """
     from flask import current_app
     app        = current_app._get_current_object()
-    brevo_key  = os.getenv("BREVO_API_KEY", "")
+    resend_key = os.getenv("RESEND_API_KEY", "")
 
     def _run():
         with app.app_context():
             try:
-                if brevo_key:
-                    _send_via_brevo(to_email, to_name, subject, body)
+                if resend_key:
+                    _send_via_resend(to_email, to_name, subject, body)
                 else:
                     _send_via_smtp(to_email, subject, body)
             except Exception as e:
