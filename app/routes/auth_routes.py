@@ -107,21 +107,30 @@ def register():
         db.session.add(new_student)
         db.session.commit()
 
-        # 3. SEND WELCOME EMAIL
+        # 3. SEND WELCOME EMAIL in background thread
         try:
             from flask import current_app
-            frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
-            msg = Message("Welcome to Student Portal", recipients=[email])
-            msg.body = (
-                f"Hello {name},\n\n"
-                f"Your registration is successful!\n\n"
-                f"Login here: {frontend_url}/login.html\n\n"
-                f"Email: {email}\n\n"
-                f"If you did not register, please ignore this email."
-            )
-            mail.send(msg)
+            import threading
+            app = current_app._get_current_object()
+            frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+            _email, _name = email, name
+            def _send_welcome():
+                with app.app_context():
+                    try:
+                        msg = Message("Welcome to Student Portal", recipients=[_email])
+                        msg.body = (
+                            f"Hello {_name},\n\n"
+                            f"Your registration is successful!\n\n"
+                            f"Login here: {frontend_url}/login.html\n\n"
+                            f"Email: {_email}\n\n"
+                            f"If you did not register, please ignore this email."
+                        )
+                        mail.send(msg)
+                    except Exception as e:
+                        print(f"Welcome email failed: {e}")
+            threading.Thread(target=_send_welcome, daemon=True).start()
         except Exception as mail_err:
-            print(f"Mail failed to send but user was created: {mail_err}")
+            print(f"Mail setup failed: {mail_err}")
 
         return jsonify({"message": "Registration successful. Welcome email sent!"}), 201
 
@@ -171,17 +180,30 @@ def forgot_password():
 
     try:
         db.session.commit()
-        frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
-        msg = Message("Your Password Reset OTP", recipients=[email])
-        msg.body = (
-            f"Hello {user.name},\n\n"
-            f"Your OTP for password reset is: {otp}\n\n"
-            f"This code expires in 10 minutes.\n\n"
-            f"Use this link to reset your password:\n"
-            f"{frontend_url}/forgot_password.html\n\n"
-            f"If you did not request this, please ignore this email."
-        )
-        mail.send(msg)
+        from flask import current_app
+        import threading
+        app = current_app._get_current_object()
+        frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+        otp_copy = otp
+        user_name = user.name
+
+        def _send_otp():
+            with app.app_context():
+                try:
+                    msg = Message("Your Password Reset OTP", recipients=[email])
+                    msg.body = (
+                        f"Hello {user_name},\n\n"
+                        f"Your OTP for password reset is: {otp_copy}\n\n"
+                        f"This code expires in 10 minutes.\n\n"
+                        f"Use this link to reset your password:\n"
+                        f"{frontend_url}/forgot_password.html\n\n"
+                        f"If you did not request this, please ignore this email."
+                    )
+                    mail.send(msg)
+                except Exception as e:
+                    print(f"OTP email failed: {e}")
+
+        threading.Thread(target=_send_otp, daemon=True).start()
         return jsonify({"message": "OTP sent to your email"}), 200
     except Exception as e:
         db.session.rollback()

@@ -1,5 +1,6 @@
 import os
 import secrets
+import threading
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_mail import Message as MailMessage
@@ -14,21 +15,31 @@ from app.utils.role_required import admin_required
 
 admin_bp = Blueprint("admin_bp", __name__, url_prefix="/admin")
 
-# --- EMAIL UTILITY (Internal) ---
+# --- EMAIL UTILITY — runs in background thread so it never blocks the worker ---
 def send_activation_email(email, name, token):
     from flask import current_app
-    frontend_url = current_app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
+    app = current_app._get_current_object()
+    frontend_url = app.config.get('FRONTEND_URL', 'http://127.0.0.1:8000')
     activation_link = f"{frontend_url}/activate.html?token={token}"
-    msg = MailMessage("Activate Your Student Portal Account", recipients=[email])
-    msg.body = (
-        f"Hello {name},\n\n"
-        f"Your account has been created on the Student Portal.\n\n"
-        f"Click the link below to activate your account and set your password:\n"
-        f"{activation_link}\n\n"
-        f"This link expires in 24 hours.\n\n"
-        f"If you did not expect this email, please ignore it."
-    )
-    mail.send(msg)
+
+    def _send():
+        with app.app_context():
+            try:
+                msg = MailMessage("Activate Your Student Portal Account", recipients=[email])
+                msg.body = (
+                    f"Hello {name},\n\n"
+                    f"Your account has been created on the Student Portal.\n\n"
+                    f"Click the link below to activate your account and set your password:\n"
+                    f"{activation_link}\n\n"
+                    f"This link expires in 24 hours.\n\n"
+                    f"If you did not expect this email, please ignore it."
+                )
+                mail.send(msg)
+                print(f"Activation email sent to {email}")
+            except Exception as e:
+                print(f"Activation email failed for {email}: {e}")
+
+    threading.Thread(target=_send, daemon=True).start()
 
 # ==========================================
 # 1. DASHBOARD & SYSTEM ANALYTICS (UNTOUCHED)
@@ -163,13 +174,9 @@ def add_user_unified():
 
         db.session.commit()
 
-        try:
-            send_activation_email(email, name, activation_token)
-        except Exception as mail_err:
-            print(f"⚠️ Email failed but user created: {mail_err}")
-            return jsonify({"message": f"{role.capitalize()} added. Warning: Activation email could not be sent."}), 201
-
-        return jsonify({"message": f"{role.capitalize()} added successfully. Activation email sent."}), 201
+        # Send email in background — never blocks the response
+        send_activation_email(email, name, activation_token)
+        return jsonify({"message": f"{role.capitalize()} added successfully. Activation email will be sent shortly."}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
