@@ -49,10 +49,9 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=2)
 
     # --- Frontend URL (used in emails for activation links etc.) ---
-    FRONTEND_URL = os.getenv(
-        "FRONTEND_URL",
-        "https://student-portal-backend-8icb.onrender.com" if IS_RENDER else "http://127.0.0.1:8000"
-    )
+    # IMPORTANT: Set FRONTEND_URL in Render's Environment Variables tab.
+    # Default is the Render URL. For local dev it reads from .env file.
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "https://student-portal-backend-8icb.onrender.com")
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
