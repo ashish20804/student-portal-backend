@@ -60,10 +60,6 @@
                         <input type="date" id="applicationDate" class="form-control" required>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-50 py-2">Save Application</button>
-                    <button type="button" class="btn btn-white border w-50 py-2" onclick="toggleForm()">Cancel</button>
-                </div>
                 <div class="mb-4">
     <label class="small text-muted fw-bold d-block mb-2">Upload Admission/Application Proof (PDF only)*</label>
     <div class="input-group">
@@ -71,9 +67,13 @@
         <input type="file" id="proof_file" class="form-control border-start-0" accept=".pdf">
     </div>
     <div class="form-text text-danger fw-bold" style="font-size: 0.75rem;">
-        <i class="bi bi-exclamation-triangle-fill"></i> Maximum file size allowed: 20MB
+        <i class="bi bi-exclamation-triangle-fill"></i> Maximum file size allowed: 16MB
     </div>
 </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-50 py-2">Save Application</button>
+                    <button type="button" class="btn btn-white border w-50 py-2" onclick="toggleForm()">Cancel</button>
+                </div>
             </form>
         </div>
 

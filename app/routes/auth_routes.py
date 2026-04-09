@@ -179,8 +179,8 @@ def forgot_password():
             f"Hello {user.name},\n\n"
             f"Your OTP for password reset is: {otp}\n\n"
             f"This code expires in 10 minutes.\n\n"
-            f"Use this link to reset your password:\n"
-            f"{frontend_url}/forgot_password.html\n\n"
+            f"Use this link to reset your password:\n\n"
+            f"{frontend_url.rstrip('/')}/forgot_password.html\n\n"
             f"If you did not request this, please ignore this email."
         )
         send_email_async(user.email, user.name, subject, body)

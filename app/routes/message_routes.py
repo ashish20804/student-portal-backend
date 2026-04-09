@@ -11,6 +11,17 @@ import base64, threading, logging
 
 message_bp = Blueprint("message", __name__, url_prefix="/message")
 
+def _profile_image_url(image_bytes):
+    """Convert MEDIUMBLOB bytes to base64 data URL, or return None."""
+    if not image_bytes:
+        return None
+    try:
+        import base64 as b64
+        encoded = b64.b64encode(image_bytes).decode('utf-8')
+        return f"data:image/jpeg;base64,{encoded}"
+    except Exception:
+        return None
+
 def _decode_content(encoded):
     """Decode Base64 message content sent from frontend."""
     try:
@@ -18,7 +29,7 @@ def _decode_content(encoded):
     except Exception:
         return encoded  # fallback: return as-is if not encoded
 
-def _build_email_html(receiver_name, sender_name, sender_role, sender_identifier, preview, timestamp):
+def _build_email_html(receiver_name, sender_name, sender_role, sender_identifier, preview, timestamp, frontend_url):
     """Build a styled HTML email body for message notification."""
     role_badge_color = {
         'faculty': '#0d6efd',
@@ -76,7 +87,7 @@ def _build_email_html(receiver_name, sender_name, sender_role, sender_identifier
 
                 <!-- CTA -->
                 <div style="text-align:center;margin-top:24px;">
-                  <a href="http://127.0.0.1:8000/messages.html" style="display:inline-block;background:linear-gradient(135deg,#0d6efd,#6610f2);color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">&#128172; Open Messages</a>
+                  <a href="{frontend_url}/messages.html" style="display:inline-block;background:linear-gradient(135deg,#0d6efd,#6610f2);color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">&#128172; Open Messages</a>
                 </div>
               </td>
             </tr>
@@ -101,16 +112,18 @@ def _send_notification_async(app, receiver_email, receiver_name, sender_name,
     def run():
         with app.app_context():
             try:
+                from app.email_utils import send_email_async
+                frontend_url = app.config.get('FRONTEND_URL', 'https://student-portal-backend-8icb.onrender.com').rstrip('/')
                 subject = f"\U0001f4ac New message from {sender_name} | Student Portal"
                 html_body = _build_email_html(
                     receiver_name, sender_name, sender_role,
-                    sender_identifier, preview, timestamp
+                    sender_identifier, preview, timestamp, frontend_url
                 )
                 plain_body = (
                     f"Hi {receiver_name},\n\n"
                     f"You have a new message from {sender_name} ({sender_role}) on the Student Portal.\n\n"
                     f"Preview: \"{preview[:200]}{'...' if len(preview) > 200 else ''}\"\n\n"
-                    f"Open messages: http://127.0.0.1:8000/messages.html\n\n"
+                    f"Open messages: {frontend_url}/messages.html\n\n"
                     f"---\nThis is an automated notification. Do not reply."
                 )
                 msg = MailMessage(
@@ -227,11 +240,11 @@ def get_recent_chats():
     result = []
     for user_obj, roll_no in contacts:
         result.append({
-            "userId": user_obj.userId,
-            "username": user_obj.name,  # Schema uses 'name'
-            "role": user_obj.role,
-            "profile_image": user_obj.profile_image, # Schema has this in 'user' table
-            "rollNumber": roll_no or ""
+            "userId":        user_obj.userId,
+            "username":      user_obj.name,
+            "role":          user_obj.role,
+            "profile_image": _profile_image_url(user_obj.profile_image),
+            "rollNumber":    roll_no or ""
         })
     return jsonify(result), 200
 
@@ -255,11 +268,11 @@ def search_users():
     result = []
     for user_obj, roll_no in search_results:
         result.append({
-            "userId": user_obj.userId,
-            "username": user_obj.name,
-            "role": user_obj.role,
-            "profile_image": user_obj.profile_image,
-            "rollNumber": roll_no or ""
+            "userId":        user_obj.userId,
+            "username":      user_obj.name,
+            "role":          user_obj.role,
+            "profile_image": _profile_image_url(user_obj.profile_image),
+            "rollNumber":    roll_no or ""
         })
     return jsonify(result), 200
 
