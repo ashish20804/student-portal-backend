@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.extensions import db, mail
+from app.extensions import db
 from app.models.message import Message
 from app.models.user import User
 from app.models.student import Student
 from sqlalchemy import or_
-from flask_mail import Message as MailMessage
 from datetime import datetime, timedelta
 import base64, threading, logging
 
@@ -108,34 +107,24 @@ def _build_email_html(receiver_name, sender_name, sender_role, sender_identifier
 
 def _send_notification_async(app, receiver_email, receiver_name, sender_name,
                               sender_role, sender_identifier, preview, timestamp):
-    """Send HTML email notification in a background thread."""
+    """Send message notification email using Brevo/SMTP via send_email_async."""
     def run():
         with app.app_context():
             try:
                 from app.email_utils import send_email_async
                 frontend_url = app.config.get('FRONTEND_URL', 'https://student-portal-backend-8icb.onrender.com').rstrip('/')
                 subject = f"\U0001f4ac New message from {sender_name} | Student Portal"
-                html_body = _build_email_html(
-                    receiver_name, sender_name, sender_role,
-                    sender_identifier, preview, timestamp, frontend_url
-                )
-                plain_body = (
+                body = (
                     f"Hi {receiver_name},\n\n"
                     f"You have a new message from {sender_name} ({sender_role}) on the Student Portal.\n\n"
                     f"Preview: \"{preview[:200]}{'...' if len(preview) > 200 else ''}\"\n\n"
-                    f"Open messages: {frontend_url}/messages.html\n\n"
+                    f"Open messages:\n\n"
+                    f"{frontend_url}/messages.html\n\n"
                     f"---\nThis is an automated notification. Do not reply."
                 )
-                msg = MailMessage(
-                    subject=subject,
-                    recipients=[receiver_email],
-                    body=plain_body,
-                    html=html_body
-                )
-                mail.send(msg)
-                logging.info(f"Message notification sent to {receiver_email}")
+                send_email_async(receiver_email, receiver_name, subject, body)
             except Exception as e:
-                logging.warning(f"Email notification failed: {e}")
+                logging.warning(f"Message notification failed: {e}")
     threading.Thread(target=run, daemon=True).start()
 
 @message_bp.route("/send", methods=["POST"])
